@@ -87,6 +87,9 @@ void BatcherSortNetwork(SortArray& a);
 void RadixSortLSD(class SortArray& a);
 void RadixSortMSD(class SortArray& a);
 
+void SleepSort(class SortArray& a);
+void CountingSort(class SortArray& a);
+
 void StlSort(class SortArray& a);
 void StlStableSort(class SortArray& a);
 void StlHeapSort(class SortArray& a);
@@ -94,8 +97,12 @@ void StlHeapSort(class SortArray& a);
 void TimSort(class SortArray& a);
 void WikiSort(class SortArray& a);
 
+void JSort(class SortArray& a);
+
+void BogoBogoSort(class SortArray& a);
 void BogoSort(class SortArray& a);
 void BozoSort(class SortArray& a);
+void PermSort(class SortArray& a);
 void StoogeSort(class SortArray& a);
 void SlowSort(class SortArray& a);
 

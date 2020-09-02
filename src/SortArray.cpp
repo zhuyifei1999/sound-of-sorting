@@ -73,6 +73,8 @@ void SortArray::OnAlgoLaunch(const AlgoEntry& ae)
 
 void SortArray::ResetArray(size_t size)
 {
+    if (size == m_array.size()) return;
+
     m_array.resize(size, ArrayItem(0));
     m_mark.resize(size);
 }
@@ -99,7 +101,7 @@ void SortArray::FinishFill()
     g_compare_count = 0;
     m_calc_inversions = true;
 
-    RecalcInversions();
+    //RecalcInversions();
 }
 
 void SortArray::FillInputlist(wxArrayString& list)
@@ -110,6 +112,8 @@ void SortArray::FillInputlist(wxArrayString& list)
     list.Add(_("Shuffled Cubic"));
     list.Add(_("Shuffled Quintic"));
     list.Add(_("Shuffled n-2 Equal"));
+    list.Add(_("Almost Sorted"));
+//    list.Add(_(""));
 }
 
 void SortArray::FillData(unsigned int schema, size_t arraysize)
@@ -120,65 +124,64 @@ void SortArray::FillData(unsigned int schema, size_t arraysize)
 
     if (schema == 0) // Shuffle of [1,n]
     {
+        std::vector<ArrayItem> m_array_p = FillDataProxy(0, arraysize);
+
         for (size_t i = 0; i < m_array.size(); ++i)
-            m_array[i] = ArrayItem(i+1);
+            m_array[i] = m_array_p[i];
 
         std::random_shuffle(m_array.begin(), m_array.end());
     }
     else if (schema == 1) // Ascending [1,n]
     {
+        std::vector<ArrayItem> m_array_p = FillDataProxy(0, arraysize);
+
         for (size_t i = 0; i < m_array.size(); ++i)
-            m_array[i] = ArrayItem(i+1);
+            m_array[i] = m_array_p[i];
     }
     else if (schema == 2) // Descending [1,n]
     {
+        std::vector<ArrayItem> m_array_p = FillDataProxy(0, arraysize);
+
         for (size_t i = 0; i < m_array.size(); ++i)
-            m_array[i] = ArrayItem(m_array.size() - i);
+            m_array[i] = m_array_p[arraysize - i - 1];
     }
     else if (schema == 3) // Cubic skew of [1,n]
     {
+        std::vector<ArrayItem> m_array_p = FillDataProxy(1, arraysize);
+
         for (size_t i = 0; i < m_array.size(); ++i)
-        {
-            // normalize to [-1,+1]
-            double x = (2.0 * (double)i / m_array.size()) - 1.0;
-            // calculate x^3
-            double v = x * x * x;
-            // normalize to array size
-            double w = (v + 1.0) / 2.0 * arraysize + 1;
-            // decrease resolution for more equal values
-            w /= 3.0;
-            m_array[i] = ArrayItem(w + 1);
-        }
+            m_array[i] = m_array_p[i];
 
         std::random_shuffle(m_array.begin(), m_array.end());
     }
     else if (schema == 4) // Quintic skew of [1,n]
     {
+        std::vector<ArrayItem> m_array_p = FillDataProxy(2, arraysize);
+
         for (size_t i = 0; i < m_array.size(); ++i)
-        {
-            // normalize to [-1,+1]
-            double x = (2.0 * (double)i / m_array.size()) - 1.0;
-            // calculate x^5
-            double v = x * x * x * x * x;
-            // normalize to array size
-            double w = (v + 1.0) / 2.0 * arraysize + 1;
-            // decrease resolution for more equal values
-            w /= 3.0;
-            m_array[i] = ArrayItem(w + 1);
-        }
+            m_array[i] = m_array_p[i];
 
         std::random_shuffle(m_array.begin(), m_array.end());
     }
     else if (schema == 5) // shuffled n-2 equal values in [1,n]
     {
-        m_array[0] = ArrayItem(1);
-        for (size_t i = 1; i < m_array.size()-1; ++i)
-        {
-            m_array[i] = ArrayItem( arraysize / 2 + 1 );
-        }
-        m_array[m_array.size()-1] = ArrayItem(arraysize);
+        std::vector<ArrayItem> m_array_p = FillDataProxy(3, arraysize);
+
+        for (size_t i = 0; i < m_array.size(); ++i)
+            m_array[i] = m_array_p[i];
 
         std::random_shuffle(m_array.begin(), m_array.end());
+    }
+    else if (schema == 6) // Almost Sorted
+    {
+        std::vector<ArrayItem> m_array_p = FillDataProxy(0, arraysize);
+
+        for (size_t i = 0; i < m_array.size(); ++i)
+            m_array[i] = m_array_p[i];
+
+        srand(time(NULL));
+        for (size_t i = 0; i < (log(m_array.size())/log(2)); ++i)
+            std::swap(m_array[rand() % m_array.size()], m_array[rand() % m_array.size()]);
     }
     else // fallback
     {
@@ -186,6 +189,70 @@ void SortArray::FillData(unsigned int schema, size_t arraysize)
     }
 
     FinishFill();
+}
+
+
+std::vector<ArrayItem> SortArray::FillDataProxy(unsigned int schema, size_t arraysize)
+{
+    if (arraysize == 0) arraysize = 1;
+
+    if (m_array_proxy.count(schema) > 0 && m_array_proxy.at(schema).count(arraysize) > 0)
+        return m_array_proxy.at(schema).at(arraysize);
+
+    std::vector<ArrayItem>     m_array_p(arraysize);
+
+    if (schema == 0) // Ascending [1,n]
+    {
+        for (size_t i = 0; i < m_array_p.size(); ++i)
+            m_array_p[i] = ArrayItem(i+1);
+    }
+    else if (schema == 1) // Cubic skew of [1,n]
+    {
+        for (size_t i = 0; i < m_array_p.size(); ++i)
+        {
+            // normalize to [-1,+1]
+            double x = (2.0 * (double)i / m_array_p.size()) - 1.0;
+            // calculate x^3
+            double v = x * x * x;
+            // normalize to array size
+            double w = (v + 1.0) / 2.0 * arraysize + 1;
+            // decrease resolution for more equal values
+            w /= 3.0;
+            m_array_p[i] = ArrayItem(w + 1);
+        }
+    }
+    else if (schema == 2) // Quintic skew of [1,n]
+    {
+        for (size_t i = 0; i < m_array_p.size(); ++i)
+        {
+            // normalize to [-1,+1]
+            double x = (2.0 * (double)i / m_array_p.size()) - 1.0;
+            // calculate x^5
+            double v = x * x * x * x * x;
+            // normalize to array size
+            double w = (v + 1.0) / 2.0 * arraysize + 1;
+            // decrease resolution for more equal values
+            w /= 3.0;
+            m_array_p[i] = ArrayItem(w + 1);
+        }
+    }
+    else if (schema == 3) // n-2 equal values in [1,n]
+    {
+        m_array_p[0] = ArrayItem(1);
+        for (size_t i = 1; i < m_array_p.size()-1; ++i)
+        {
+            m_array_p[i] = ArrayItem( arraysize / 2 + 1 );
+        }
+        m_array_p[m_array_p.size()-1] = ArrayItem(arraysize);
+    }
+    else // fallback
+    {
+        return FillDataProxy(0, arraysize);
+    }
+
+    m_array_proxy[schema][arraysize] = m_array_p;
+
+    return m_array_p;
 }
 
 void SortArray::OnAccess()

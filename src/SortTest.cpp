@@ -51,12 +51,15 @@ bool SortTestApp::OnInit()
     return true;
 }
 
-static size_t testsize[] = {
+/*static size_t testsize[] = {
+    2, 5,
     10, 11, 12, 13, 14, 15, 16, 32,
-    100, 101, 102, 103, 200,
+    100, 101, 102, 103, 128,
+    256, 512,
     1024, 1337, 2048,
+    4096, 8192, 16384,
     0
-};
+};*/
 
 struct SortedCheck
 {
@@ -101,21 +104,24 @@ int SortTestApp::OnRun()
         wxPrintf(_T("-----------------------------------------------------\n"));
         wxPrintf(_T("Testing %s\n"), ae.name.c_str());
 
-        for (size_t sizei = 0; testsize[sizei]; ++sizei)
+        double n = 1;
+        size_t nint = round(n);
+        while (true || nint <= 16384)
         {
-            size_t n = testsize[sizei];
+            bool needbreak = false;
+//            if (n > ae.max_testsize) break;
 
-            if (n > ae.max_testsize) break;
+            SortArray array;
 
-            for (size_t inputi = 0; inputi < inputlist.size(); ++inputi)
+            //for (size_t inputi = 0; inputi < inputlist.size(); ++inputi)
+            for (size_t inputi = 0; inputi < 1; ++inputi)
             {
-                SortArray array;
-                array.FillData(inputi, n);
+                array.FillData(inputi, nint);
 
-                SortedCheck sortcheck(array);
+                //SortedCheck sortcheck(array);
 
                 array.OnAlgoLaunch(ae);
-                if (ae.inversion_count_limit != UINT_MAX)
+                //if (ae.inversion_count_limit != UINT_MAX)
                     array.SetCalcInversions(false);
 
                 wxStopWatch sw;
@@ -126,14 +132,34 @@ int SortTestApp::OnRun()
                     wxPrintf(_T("FAILED(%s) "), inputlist[inputi].c_str());
                     all_good = false;
                 }
-                else if (!sortcheck.check(array)) {
+                /*else if (!sortcheck.check(array)) {
                     wxPrintf(_T("FAILED(%s) "), inputlist[inputi].c_str());
                     all_good = false;
-                }
+                }*/
 
-                wxPrintf(_T("%d/i%d -> %ld ms. "), n, inputi, millitime);
+                if (millitime > 1000)
+                    needbreak = true;
+
+                if (millitime > 0) {
+                    wxPrintf(_T("%ld/i%ld -> %ld ms. "), nint, inputi, millitime);
+                    wxPrintf(_T("\n"));
+                }
                 fflush(stdout);
             }
+            //wxPrintf(_T("\n"));
+
+            if (needbreak)
+                break;
+
+            if (n < 8)
+                n++;
+            else if (n < 16)
+                n += 2;
+            else
+                //n *= sqrt(2);
+                n *= 2;
+
+            nint = round(n);
         }
 
         wxPrintf(_T("\n"));

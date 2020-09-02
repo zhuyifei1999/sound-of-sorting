@@ -25,6 +25,7 @@
 #define SORT_ARRAY_HEADER
 
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <stdlib.h>
 
@@ -138,6 +139,9 @@ protected:
 
     /// the array data
     std::vector<ArrayItem>     m_array;
+
+    // proxy for array data generation
+    std::map<unsigned int, std::map<size_t, std::vector<ArrayItem> > >    m_array_proxy;
 
     /// maximum value in array for scaling display
     ArrayItem::value_type      m_array_max;
@@ -443,6 +447,9 @@ public:
 
         m_watch.clear();
     }
+
+protected:
+    std::vector<ArrayItem> FillDataProxy(unsigned int schema, size_t arraysize);
 };
 
 // ----------------------------------------------------------------------------

@@ -38,18 +38,23 @@
 #include <limits>
 #include <inttypes.h>
 
+#include <iostream>
+
 typedef ArrayItem value_type;
 
 // inversion count limit for iterator instrumented algorithms
 const unsigned int inversion_count_instrumented = 512;
 
+const unsigned int max_testsize_mid = 4096;
+const unsigned int inversion_count_def = 512;
+
 const struct AlgoEntry g_algolist[] =
 {
-    { _("Selection Sort"), &SelectionSort, UINT_MAX, UINT_MAX,
+    { _("Selection Sort"), &SelectionSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
-    { _("Insertion Sort"), &InsertionSort, UINT_MAX, UINT_MAX,
+    { _("Insertion Sort"), &InsertionSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
-    { _("Binary Insertion Sort"), &BinaryInsertionSort, UINT_MAX, UINT_MAX,
+    { _("Binary Insertion Sort"), &BinaryInsertionSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
     { _("Merge Sort"), &MergeSort, UINT_MAX, 512,
       _("Merge sort which merges two sorted sequences into a shadow array,"
@@ -57,49 +62,53 @@ const struct AlgoEntry g_algolist[] =
     { _("Merge Sort (iterative)"), &MergeSortIterative, UINT_MAX, 512,
       _("Merge sort variant which iteratively merges "
         "subarrays of sizes of powers of two.") },
-    { _("Quick Sort (LR ptrs)"), &QuickSortLR, UINT_MAX, UINT_MAX,
+    { _("Quick Sort (LR ptrs)"), &QuickSortLR, UINT_MAX, inversion_count_def,
       _("Quick sort variant with left and right pointers.") },
-    { _("Quick Sort (LL ptrs)"), &QuickSortLL, UINT_MAX, UINT_MAX,
+    { _("Quick Sort (LL ptrs)"), &QuickSortLL, max_testsize_mid, inversion_count_def,
       _("Quick sort variant from 3rd edition of CLRS: two pointers on left.") },
-    { _("Quick Sort (ternary, LR ptrs)"), &QuickSortTernaryLR, UINT_MAX, UINT_MAX,
+    { _("Quick Sort (ternary, LR ptrs)"), &QuickSortTernaryLR, UINT_MAX, inversion_count_def,
       _("Ternary-split quick sort variant, adapted from multikey quicksort by "
         "Bentley & Sedgewick: partitions \"=<?>=\" using two pairs of pointers "
         "at left and right, then copied to middle.") },
-    { _("Quick Sort (ternary, LL ptrs)"), &QuickSortTernaryLL, UINT_MAX, UINT_MAX,
+    { _("Quick Sort (ternary, LL ptrs)"), &QuickSortTernaryLL, UINT_MAX, inversion_count_def,
       _("Ternary-split quick sort variant: partitions \"<>?=\" using two "
         "pointers at left and one at right. Afterwards copies the \"=\" to middle.") },
-    { _("Quick Sort (dual pivot)"), &QuickSortDualPivot, UINT_MAX, UINT_MAX,
+    { _("Quick Sort (dual pivot)"), &QuickSortDualPivot, max_testsize_mid, inversion_count_def,
       _("Dual pivot quick sort variant: partitions \"<1<2?>\" using three pointers, "
         "two at left and one at right.") },
-    { _("Bubble Sort"), &BubbleSort, UINT_MAX, UINT_MAX,
+    { _("Bubble Sort"), &BubbleSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
-    { _("Cocktail Shaker Sort"), &CocktailShakerSort, UINT_MAX, UINT_MAX,
+    { _("Cocktail Shaker Sort"), &CocktailShakerSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
-    { _("Gnome Sort"), &GnomeSort, UINT_MAX, UINT_MAX,
+    { _("Gnome Sort"), &GnomeSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
-    { _("Comb Sort"), &CombSort, UINT_MAX, UINT_MAX,
+    { _("Comb Sort"), &CombSort, UINT_MAX, inversion_count_def,
       wxEmptyString },
     { _("Shell Sort"), &ShellSort, UINT_MAX, 1024,
       wxEmptyString },
-    { _("Heap Sort"), &HeapSort, UINT_MAX, UINT_MAX,
+    { _("Heap Sort"), &HeapSort, UINT_MAX, inversion_count_def,
       wxEmptyString },
     { _("Smooth Sort"), &SmoothSort, UINT_MAX, 1024,
       wxEmptyString },
-    { _("Odd-Even Sort"), &OddEvenSort, UINT_MAX, 1024,
+    { _("Odd-Even Sort"), &OddEvenSort, max_testsize_mid, 1024,
       wxEmptyString },
     // older sequential implementation, which really makes little sense to do
-    //{ _("Bitonic Sort"), &BitonicSort, UINT_MAX, UINT_MAX, wxEmptyString },
-    { _("Batcher's Bitonic Sort"), &BitonicSortNetwork, UINT_MAX, UINT_MAX,
+    { _("Bitonic Sort"), &BitonicSort, UINT_MAX, inversion_count_def, wxEmptyString },
+    { _("Batcher's Bitonic Sort"), &BitonicSortNetwork, UINT_MAX, inversion_count_def,
       wxEmptyString },
-    { _("Batcher's Odd-Even Merge Sort"), &BatcherSortNetwork, UINT_MAX, UINT_MAX,
+    { _("Batcher's Odd-Even Merge Sort"), &BatcherSortNetwork, UINT_MAX, inversion_count_def,
       wxEmptyString },
-    { _("Cycle Sort"), &CycleSort, 512, UINT_MAX,
+    { _("Cycle Sort"), &CycleSort, 512, inversion_count_def,
       wxEmptyString },
     { _("Radix Sort (LSD)"), &RadixSortLSD, UINT_MAX, 512,
       _("Least significant digit radix sort, which copies item into a shadow "
         "array during counting.") },
-    { _("Radix Sort (MSD)"), &RadixSortMSD, UINT_MAX, UINT_MAX,
+    { _("Radix Sort (MSD)"), &RadixSortMSD, UINT_MAX, inversion_count_def,
       _("Most significant digit radix sort, which permutes items in-place by walking cycles.") },
+    { _("Sleep Sort"), &SleepSort, max_testsize_mid, inversion_count_def,
+      wxEmptyString },
+    { _("Counting Sort"), &CountingSort, UINT_MAX, inversion_count_def,
+      wxEmptyString },
     { _("std::sort (gcc)"), &StlSort, UINT_MAX, inversion_count_instrumented,
       wxEmptyString },
     { _("std::stable_sort (gcc)"), &StlStableSort, UINT_MAX, inversion_count_instrumented,
@@ -110,9 +119,15 @@ const struct AlgoEntry g_algolist[] =
       wxEmptyString },
     { _("Block Merge Sort (WikiSort)"), &WikiSort, UINT_MAX, inversion_count_instrumented,
       _("An O(1) place O(n log n) time stable merge sort.") },
-    { _("Bogo Sort"), &BogoSort, 10, UINT_MAX,
+    { _("JSort"), &JSort, max_testsize_mid, inversion_count_def,
       wxEmptyString },
-    { _("Bozo Sort"), &BozoSort, 10, UINT_MAX,
+    { _("BogoBogo Sort"), &BogoBogoSort, 5, inversion_count_def,
+      wxEmptyString },
+    { _("Bogo Sort"), &BogoSort, 10, inversion_count_def,
+      wxEmptyString },
+    { _("Bozo Sort"), &BozoSort, 10, inversion_count_def,
+      wxEmptyString },
+    { _("Perm Sort"), &PermSort, 10, inversion_count_def,
       wxEmptyString },
     { _("Stooge Sort"), &StoogeSort, 256, inversion_count_instrumented,
       wxEmptyString },
@@ -206,10 +221,10 @@ void BinaryInsertionSort(SortArray& A)
         int lo = 0, hi = i;
         while (lo < hi) {
             int mid = (lo + hi) / 2;
-            if (key <= A[mid])
-                hi = mid;
-            else
+            if (key >= A[mid])
                 lo = mid + 1;
+            else
+                hi = mid;
         }
 
         // item has to go into position lo
@@ -299,7 +314,7 @@ void MergeSortIterative(SortArray& A)
 // ****************************************************************************
 // *** Quick Sort Pivot Selection
 
-QuickSortPivotType g_quicksort_pivot = PIVOT_FIRST;
+QuickSortPivotType g_quicksort_pivot = PIVOT_RANDOM;
 
 // some quicksort variants use hi inclusive and some exclusive, we require it
 // to be _exclusive_. hi == array.end()!
@@ -899,6 +914,82 @@ void HeapSort(SortArray& A)
 }
 
 // ****************************************************************************
+// *** JSort
+
+// heavily adapted from http://cglab.ca/~morin/misc/sortalg/JSortAlgorithm.java
+
+void reheap(SortArray& A, size_t length, size_t i)
+{
+    size_t parent = i;
+    size_t child = 2*(i+1)-1;
+    if (child >= length) return;
+    bool done = false;
+    value_type T = A[i];
+    while ((child < length) && (!done))
+    {
+        if (child < length - 1)
+            if (A[child] >= A[child + 1])
+                child += 1;
+
+        if (T < A[child])
+            done = true;
+        else
+        {
+            A.set(parent, A[child]);
+            parent = child;
+            child = 2*(parent+1)-1;
+        }
+    }
+    A.set(parent, T);
+}
+
+void invreheap(SortArray& A, size_t length, size_t i)
+{
+    size_t parent = i;
+    size_t child = 2*(i+1)-1;
+    if (child >= length) return;
+    bool done = false;
+    value_type T = A[length - 1 - i];
+    while ((child < length) && (!done))
+    {
+        if (child < length - 1)
+            if (A[length - 1 - child] <= A[length - 1 - (child + 1)])
+                child += 1;
+
+        if (T > A[length - 1 - child])
+            done = true;
+        else
+        {
+            A.set(length - 1 - parent, A[length - 1 - child]);
+            parent = child;
+            child = 2*(parent+1)-1;
+        }
+    }
+    A.set(length - 1 - parent, T);
+}
+
+void JSort(SortArray& A) {
+    // Heapify bottom up
+    for (size_t i = A.size(); i > 0; i--)
+    {
+        A.mark(i-1, log(prevPowerOfTwo(i)) / log(2) + 4);
+        reheap(A, A.size(), i-1);
+    }
+    A.unmark_all();
+
+    // Heapify top down
+    for (size_t i = A.size(); i > 0; i--)
+    {
+        A.mark(A.size()-i, log(prevPowerOfTwo(i+2)) / log(2) + 4);
+        invreheap(A, A.size(), i-1);
+    }
+    A.unmark_all();
+
+    // Do an insertion sort on the almost sorted array
+    BinaryInsertionSort(A);
+}
+
+// ****************************************************************************
 // *** Radix Sort (counting sort, most significant digit (MSD) first, in-place redistribute)
 
 // by myself (Timo Bingmann)
@@ -1014,6 +1105,85 @@ void RadixSortLSD(SortArray& A)
 }
 
 // ****************************************************************************
+// *** Sleep Sort
+
+// by Zhuyifei1999
+
+void SleepSort(SortArray& A)
+{
+    size_t n = 0;
+
+    std::vector<value_type> out(A.size());
+    std::vector<int> timer(A.size());
+
+    for (size_t i = 0; i < A.size(); i++)
+        timer[i] = A[i].get();
+
+    while (n < A.size())
+    {
+        for (size_t i = 0; i < A.size(); i++)
+        {
+            if (timer[i] > 0)
+            {
+                timer[i]--;
+                if (timer[i] <= 0)
+                {
+                    out[n++] = A[i];
+                }
+            }
+            A.mark(i, log(timer[i]+1)/log(2)+2);
+        }
+    }
+
+    A.unmark_all();
+    for (size_t i = 0; i < A.size(); i++)
+        A.set(i, out[i]);
+}
+
+
+// ****************************************************************************
+// *** Counting Sort
+
+// by Zhuyifei1999
+// adapted from https://en.wikipedia.org/wiki/Counting_sort
+
+void CountingSort(SortArray& A)
+{
+    std::vector<size_t> count;
+    std::vector<value_type> copy(A.size());
+
+    for (size_t i = 0; i < A.size(); i++)
+    {
+        copy[i] = A[i];
+        int val = A[i].get();
+        if ((unsigned)val+1 > count.size())
+            count.resize(val+1);
+
+        count[val]++;
+    }
+
+    size_t total = 0;
+    size_t oldCount;
+    for (size_t i = 0; i < count.size(); i++)
+    {
+        oldCount = count[i];
+        count[i] = total;
+        total += oldCount;
+        A.mark(count[i], 3);
+    }
+
+    std::vector<value_type> output(A.size());
+    for (size_t i = 0; i < A.size(); i++)
+    {
+        value_type val = copy[i];
+        A.touch(i, 16);
+        A.set(count[val.get()], val);
+        count[val.get()]++;
+    }
+
+    A.unmark_all();
+}
+// ****************************************************************************
 // *** Use STL Sorts via Iterator Adapters
 
 void StlSort(SortArray& A)
@@ -1124,6 +1294,113 @@ void BozoSort(SortArray& A)
         // swap two random items
         A.swap(rand() % A.size(), rand() % A.size());
     }
+}
+
+// ****************************************************************************
+// *** BogoBogoSort
+
+// by Zhuyifei1999
+// description http://www.dangermouse.net/esoteric/bogobogosort.html
+
+void BogoBogoPermute(SortArray& A, size_t n)
+{
+    // keep a permutation of [0, n)
+    std::vector<size_t> perm(n);
+    for (size_t i = 0; i < n; ++i)
+        perm[i] = i;
+
+    // pick a random permutation of indexes
+    std::random_shuffle(perm.begin(), perm.end());
+
+    // permute array in-place
+    std::vector<char> pmark(n, 0);
+
+    for (size_t i = 0; i < n; ++i)
+    {
+        if (pmark[i]) continue;
+        // walk a cycle
+        size_t j = i;
+
+        //std::cout << "cycle start " << j << " -> " << perm[j] << "\n";
+        while ( perm[j] != i )
+        {
+            ASSERT(!pmark[j]);
+            A.swap(j, perm[j]);
+            pmark[j] = 1;
+
+            j = perm[j];
+            //std::cout << "cycle step " << j << " -> " << perm[j] << "\n";
+        }
+        //std::cout << "cycle end\n";
+
+        ASSERT(!pmark[j]);
+        pmark[j] = 1;
+    }
+
+    //std::cout << "permute end\n";
+
+    for (size_t i = 0; i < n; ++i)
+         ASSERT(pmark[i]);
+}
+
+void BogoBogoSort(SortArray& A, size_t n)
+{
+    if (n > 1)
+    {
+        while (1)
+        {
+            // create a copy
+            std::vector<value_type> copy(n);
+            for (size_t i = 0; i < n; i++)
+                copy[i] = A[i];
+
+            // check is sorted
+            while (1)
+            {
+                //std::cout << "na: " << n << "\n";
+                // Sort the first n-1 elements
+                BogoBogoSort(A, n-1);
+
+                // quit if sorted
+                if (A[n-1] >= A[n-2]) break;
+
+                // else shuffle
+                A.mark(n-1);
+                //BogoBogoPermute(A, n);
+                std::random_shuffle(MyIterator(&A,0), MyIterator(&A,n));
+                A.unmark(n-1);
+            }
+
+
+            //std::cout << "nb: " << n << "\n";
+            A.mark(n-1, 3);
+            bool isSorted = true;
+            for (size_t i = 0; i < n; i++)
+            {
+                if (copy[i].get() != A[i].get())
+                {
+                    isSorted = false;
+                    A.set(i, copy[i]);
+                }
+            }
+
+            // exit if sorted
+            if (isSorted)
+            {
+                return;
+            }
+
+            // else shuffle
+            //BogoBogoPermute(A, n);
+            std::random_shuffle(MyIterator(&A,0), MyIterator(&A,n));
+            A.unmark(n-1);
+        }
+    }
+}
+
+void BogoBogoSort(SortArray& A)
+{
+    BogoBogoSort(A, A.size());
 }
 
 // ****************************************************************************
@@ -1629,6 +1906,47 @@ void SlowSort(SortArray& A)
 }
 
 // ****************************************************************************
+// *** Perm Sort
+
+// Adapted from http://cglab.ca/~morin/misc/sortalg/PermSortAlgorithm.java https://en.wikipedia.org/wiki/Heap's_algorithm
+
+bool PermSort(SortArray& A, size_t n)
+{
+    if (n == 1)
+    {
+        // Check if array is already sorted
+        if (BogoCheckSorted(A))
+        {
+            return true;
+        }
+    }
+    else
+    {
+        // Array wasn't sorted so start trying permutations until we
+        // get the right one.
+        for (size_t i = 0; i < n - 1; i++)
+        {
+            if (PermSort(A, n - 1))
+                return true;
+
+            if (n % 2 == 0)
+                A.swap(i, n - 1);
+            else
+                A.swap(0, n - 1);
+        }
+
+        if (PermSort(A, n - 1))
+            return true;
+    }
+    return false;
+}
+
+void PermSort(SortArray& A)
+{
+    PermSort(A, A.size());
+}
+
+// ****************************************************************************
 // *** Cycle Sort
 
 // Adapted from http://en.wikipedia.org/wiki/Cycle_sort
@@ -1680,6 +1998,29 @@ void CycleSort(SortArray& array, ssize_t n)
 void CycleSort(SortArray& A)
 {
     CycleSort(A, A.size());
+}
+
+// ****************************************************************************
+// *** Faith Sort
+
+// Adapted from https://www.reddit.com/r/programming/comments/1txefj/bogobogosort/cecjjal by papasmurf255
+#define UNUSED(x) (void)(x)
+void FaithSort(SortArray& array)
+{
+    /* Dear Lord,
+     *
+     * Thank you for this array that you have given us, blessed be
+     * thy name.
+     *
+     * In all your might, sort this array, such that each element is
+     * equal or greater than the previous one so we may continue to
+     * compute on this data.
+     *
+     * In your everlasting glory,
+     * Amen.
+     */
+    UNUSED(array);
+    return;
 }
 
 // ****************************************************************************
